@@ -8,6 +8,7 @@ import group from "../HomePage/Images/group.png";
 import leave from "../HomePage/Images/leave.png";
 import report from "../HomePage/Images/report.png";
 import '../HomePage/Homepage.css';
+import '../Approveleaves/Main.css'
 
 function Copyright(props) {
     return (
@@ -34,7 +35,7 @@ const Home2 = () =>{
         </Typography>
         <hr height={2}></hr>
     </div>
-    <div>
+    <div className="main">
     <Box className="container">
         <Box className="card">
          <img src={AdminImage} width='130px' height='130px' alt='Register_role'></img>

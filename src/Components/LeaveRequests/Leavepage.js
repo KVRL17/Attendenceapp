@@ -14,6 +14,7 @@ import { styled } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import request from "../HomePage/Images/request.png";
 import '../HomePage/Homepage.css';
+import '../Approveleaves/Main.css'
 
 function Copyright(props) {
     return (
@@ -84,13 +85,15 @@ const Leavepage = () =>{
         </Typography>
         <hr height={2}></hr>
     </div>
-    <div>
+    <div className='main'>
     <Box className="container">
         <Box className="card">
          <img src={request} width='130px' height='130px' alt='AdminImage'></img>
          <Button variant="contained" component={RouterLink} to="/Start/Leaverequests">Request Leave</Button>
         </Box>
     </Box>
+    </div>
+    <div>
     <Paper
       component="form"
       sx={{p: '8px 10px',justifyContent: 'center',alignItems: 'center',width: 400,margin: '20px auto',}}>

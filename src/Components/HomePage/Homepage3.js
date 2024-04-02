@@ -6,6 +6,7 @@ import { Link as RouterLink } from "react-router-dom";
 import start from "../HomePage/Images/start.png";
 import head from "../HomePage/Images/head.png";
 import '../HomePage/Homepage.css';
+import '../Approveleaves/Main.css'
 
 function Copyright(props) {
     return (
@@ -32,7 +33,7 @@ const Home3 = () =>{
         </Typography>
         <hr height={2}></hr>
     </div>
-    <div>
+    <div className="main">
     <Box className="container">
         <Box className="card">
          <img src={start} width='130px' height='130px' alt='AdminImage'></img>
