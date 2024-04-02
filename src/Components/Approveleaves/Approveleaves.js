@@ -88,7 +88,7 @@ export default function Approveleaves() {
         </Typography>
         <hr style={{width:"1000px"}}></hr>
       </div>
-      <div className='main2'>
+      
       <Paper
       component="form"
       sx={{p: '8px 10px',justifyContent: 'center',alignItems: 'center',width: 400,margin: '20px auto',}}>
@@ -100,7 +100,7 @@ export default function Approveleaves() {
         onChange={handleSearchChange}
       />
       </Paper>
-
+      <div className='main2'>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 700 }} aria-label="customized table">
           <TableHead>
