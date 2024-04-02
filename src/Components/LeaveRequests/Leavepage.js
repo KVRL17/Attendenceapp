@@ -83,7 +83,7 @@ const Leavepage = () =>{
         Jawaharlal Nehru Technological University-Gurajada Vizianagaram<br></br>
         (Established by Andhra Pradesh Act No.22 by 2021)
         </Typography>
-        <hr height={2}></hr>
+        <hr style={{width:"1000px"}}></hr>
     </div>
     <div className='main'>
     <Box className="container">
@@ -93,7 +93,7 @@ const Leavepage = () =>{
         </Box>
     </Box>
     </div>
-    <div>
+    <div className='main2'>
     <Paper
       component="form"
       sx={{p: '8px 10px',justifyContent: 'center',alignItems: 'center',width: 400,margin: '20px auto',}}>
@@ -135,7 +135,7 @@ const Leavepage = () =>{
     <br></br>
     <hr height={2}></hr>
     </div>
-    <Copyright sx={{ mt: 2 }} />
+    <Copyright sx={{ mt: 2,mb:5 }} />
   </div>
   );
 }

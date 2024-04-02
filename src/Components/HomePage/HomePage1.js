@@ -31,7 +31,7 @@ const Home = () =>{
         Jawaharlal Nehru Technological University-Gurajada Vizianagaram<br></br>
         (Established by Andhra Pradesh Act No.22 by 2021)
         </Typography>
-        <hr height={2}></hr>
+        <hr style={{width:"1000px"}}></hr>
     </div>
     <div className="main">
     <Box className="container">
@@ -47,9 +47,9 @@ const Home = () =>{
         </Box>
     </Box>
     <br></br>
-    <hr height={2}></hr>
+    <hr style={{width:"1000px"}}></hr>
     </div>
-    <Copyright sx={{ mt: 2 }} />
+    <Copyright sx={{ mt: 2,mb:5 }} />
   </div>
   );
 }

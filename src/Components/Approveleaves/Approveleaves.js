@@ -10,6 +10,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import '../Approveleaves/Main.css';
 
 
 
@@ -85,8 +86,9 @@ export default function Approveleaves() {
           Jawaharlal Nehru Technological University-Gurajada Vizianagaram
           <br></br>(Established by Andhra Pradesh Act No.22 by 2021)
         </Typography>
-        <hr height={2}></hr>
+        <hr style={{width:"1000px"}}></hr>
       </div>
+      <div className='main2'>
       <Paper
       component="form"
       sx={{p: '8px 10px',justifyContent: 'center',alignItems: 'center',width: 400,margin: '20px auto',}}>
@@ -129,9 +131,10 @@ export default function Approveleaves() {
           </TableBody>
         </Table>
       </TableContainer>
+      </div>
       <br></br>
-      <hr height={2}></hr>
-      <Copyright sx={{ mt: 2 }} />
+      <hr style={{width:"1000px"}}></hr>
+      <Copyright sx={{ mt: 2,mb:5 }} />
     </>
   );
 }
