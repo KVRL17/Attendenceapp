@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink } from "react-router-dom";
@@ -11,22 +11,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import '../Approveleaves/Main.css';
+import TablePagination from '@mui/material/TablePagination';
 
-
-
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.primary" align="center" {...props}>
-      {'Copyright © '}
-      All Rights are Reserved &ensp;
-      <RouterLink color="inherit" href="https://jntugv.edu.in/">
-        jntugv.edu.in
-      </RouterLink>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
+function createData(si_no, name, role, date, description) {
+  return { si_no, name, role, date, description};
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -43,59 +31,73 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   '&:last-child td, &:last-child th': {
     border: 0,
   },
 }));
 
-function createData(si_no, name, role, date, description) {
-  return { si_no, name, role, date, description};
-}
-
-const rows = [
-  createData(1, 'Ramana', 'Faculty', '31/01/23', 'Function'),
-  createData(2, 'Jagan', 'Faculty', '30/01/23', 'Event'),
-  createData(3, 'Aditya', 'Faculty', '27/01/23' , 'Tour'),
-  createData(4, 'Praveen', 'Faculty', '21/01/23', 'Meet'),
-  createData(5, 'Mohan', 'Faculty', '20/01/23', 'Trip'),
-];
-
 export default function Approveleaves() {
   const [searchTerm, setSearchTerm] = useState('');
   const [tableData, setTableData] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [disabledButtons, setDisabledButtons] = useState({});
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/leave-requests');
-        // Check if response.data is an array before setting tableData
-        if (Array.isArray(response.data)) {
-          setTableData(response.data);
-        } else {
-          console.error('Data retrieved from API is not an array:', response.data);
-          // Handle the case where data is not in the expected format
-          // For example, set an empty array as tableData
-          setTableData([]);
-        }
-      } catch (error) {
-        console.error('Error fetching table data:', error);
-      }
-    };
-
     fetchData();
   }, []);
 
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/leave-requests');
+      if (Array.isArray(response.data.leave_requests)) {
+        setTableData(response.data.leave_requests);
+      } else {
+        console.error('Data retrieved from API is not an array:', response.data.leave_requests);
+        setTableData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching table data:', error);
+    }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredRows = rows.filter(
+  const handleApprove = async (username, approved, index) => {
+    try {
+      const response = await axios.post('http://localhost:8000/approve', {
+        username: username,
+        approved: approved,
+      });
+      // After approval/rejection, fetch updated data
+      console.log({response});
+      fetchData();
+      // Disable the button after clicking
+      setDisabledButtons(prevState => ({
+        ...prevState,
+        [index]: true
+      }));
+    } catch (error) {
+      console.error('Error approving/rejecting leave request:', error);
+    }
+  };
+
+  const filteredRows = tableData.filter(
     (row) =>
       row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.role.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  );
 
   return (
     <>
@@ -139,26 +141,63 @@ export default function Approveleaves() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {tableData.map((row) => (
-              <StyledTableRow key={row.si_no}>
-                <StyledTableCell component="th" scope="row">
-                  {row.si_no}
-                </StyledTableCell>
-                <StyledTableCell>{row.name}</StyledTableCell>
-                <StyledTableCell>{row.role}</StyledTableCell>
-                <StyledTableCell>{row.date}</StyledTableCell>
-                <StyledTableCell>{row.description}</StyledTableCell>
-                <StyledTableCell><Button variant='contained' color="success">Accept</Button></StyledTableCell>
-                <StyledTableCell><Button variant='contained' color="error">Reject</Button></StyledTableCell>
-              </StyledTableRow>
-            ))}
+            {filteredRows
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row, index) => (
+                <StyledTableRow key={row.si_no}>
+                  <StyledTableCell component="th" scope="row">
+                    {row.si_no}
+                  </StyledTableCell>
+                  <StyledTableCell>{row.name}</StyledTableCell>
+                  <StyledTableCell>{row.role}</StyledTableCell>
+                  <StyledTableCell>{row.date}</StyledTableCell>
+                  <StyledTableCell>{row.description}</StyledTableCell>
+                  <StyledTableCell>
+                    <Button
+                      variant='contained'
+                      color="success"
+                      onClick={() => handleApprove(row.name, 'Leave Approved', index)}
+                      disabled={disabledButtons[index]}
+                    >
+                      Accept
+                    </Button>
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    <Button
+                      variant='contained'
+                      color="error"
+                      onClick={() => handleApprove(row.name, 'Leave Rejected', index)}
+                      disabled={disabledButtons[index]}
+                    >
+                      Reject
+                    </Button>
+                  </StyledTableCell>
+                </StyledTableRow>
+              ))}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+          colSpan={3}
+          count={filteredRows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </TableContainer>
       </div>
       <br></br>
       <hr style={{width:"1000px"}}></hr>
-      <Copyright sx={{ mt: 2,mb:5 }} />
+      <Typography variant="body2" color="text.primary" align="center">
+        {'Copyright © '}
+        All Rights are Reserved &ensp;
+        <RouterLink color="inherit" href="https://jntugv.edu.in/">
+          jntugv.edu.in
+        </RouterLink>{' '}
+        {new Date().getFullYear()}
+        {'.'}
+      </Typography>
     </>
   );
 }

@@ -7,24 +7,19 @@ import { Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer'; // Import TableContainer
+import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import TablePagination from '@mui/material/TablePagination'; // Import TablePagination
 import '../Approveleaves/Main.css';
 
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.primary" align="center" {...props}>
-      {'Copyright © '}
-      All Rights are Reserved &ensp;
-      <RouterLink color="inherit" href="https://jntugv.edu.in/">
-        jntugv.edu.in
-      </RouterLink>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
+function generateSI(pageIndex, rowsPerPage, index) {
+  return pageIndex * rowsPerPage + index + 1;
+}
+
+function createData(name, role, status) {
+  return { name, role, status };
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -46,35 +41,44 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-function createData(si_no, name, role, status) {
-  return { si_no, name, role, status };
-}
-
 export default function Viewpeople() {
   const [searchTerm, setSearchTerm] = useState('');
   const [tableData, setTableData] = useState([]);
-
-  const fetchData = async () => {
-    try {
-      const response = await axios.get('http://127.0.0.1:8000/user_info');
-      if (response.data.names && Array.isArray(response.data.names)) {
-        setTableData(response.data.names);
-      } else {
-        console.error('Data retrieved from API is not an array:', response.data);
-        setTableData([]);
-      }
-    } catch (error) {
-      console.error('Error fetching table data:', error);
-    }
-  };
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/user_info');
+        console.log('Response from API:', response.data);
+        if (response.data && Array.isArray(response.data.user_info)) {
+          setTableData(response.data.user_info);
+        } else {
+          console.error('Data retrieved from API is not an array or user_info is not present:', response.data);
+          setTableData([]);
+        }
+      } catch (error) {
+        console.error('Error fetching table data:', error);
+      }
+    };
+  
     fetchData();
   }, []);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
+
+  const filteredRows = tableData.filter(
+    (row) =>
+      (row.name && row.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (row.role && row.role.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (row.status && row.status.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  
+
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, filteredRows.length - page * rowsPerPage);
 
   return (
     <>
@@ -96,7 +100,7 @@ export default function Viewpeople() {
       sx={{p: '8px 10px',justifyContent: 'center',alignItems: 'center',width: 400,margin: '20px auto',}}>
       <InputBase
         sx={{ ml: 4, flex: 1, mr: 8 }}
-        placeholder="search by Name/Role/Active"
+        placeholder="search by Name/Role/Status"
         fullWidth
         value={searchTerm}
         onChange={handleSearchChange}
@@ -114,23 +118,46 @@ export default function Viewpeople() {
             </TableRow>
           </TableHead>
           <TableBody>
-          {tableData.map((row) => (
-  <StyledTableRow key={row.si_no}>
-    <StyledTableCell component="th" scope="row">
-      {row.si_no}
-    </StyledTableCell>
-    <StyledTableCell>{row.name}</StyledTableCell>
-    <StyledTableCell>{row.role}</StyledTableCell>
-    <StyledTableCell>{row.status}</StyledTableCell>
-  </StyledTableRow>
-))}
+            {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+              <StyledTableRow key={row.name}>
+                <StyledTableCell>{generateSI(page, rowsPerPage, index)}</StyledTableCell>
+                <StyledTableCell>{row.name}</StyledTableCell>
+                <StyledTableCell>{row.role}</StyledTableCell>
+                <StyledTableCell>{row.status}</StyledTableCell>
+              </StyledTableRow>
+            ))}
+            {emptyRows > 0 && (
+              <StyledTableRow style={{ height: 53 * emptyRows }}>
+                <StyledTableCell colSpan={4} />
+              </StyledTableRow>
+            )}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+          colSpan={3}
+          count={filteredRows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
+        />
       </TableContainer>
       </div>
       <br></br>
       <hr style={{width:"1000px"}}></hr>
-      <Copyright sx={{ mt: 2,mb:5 }} />
+      <Typography variant="body2" color="text.primary" align="center">
+        {'Copyright © '}
+        All Rights are Reserved &ensp;
+        <RouterLink color="inherit" href="https://jntugv.edu.in/">
+          jntugv.edu.in
+        </RouterLink>{' '}
+        {new Date().getFullYear()}
+        {'.'}
+      </Typography>
     </>
   );
 }

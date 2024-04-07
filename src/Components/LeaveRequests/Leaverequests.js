@@ -58,6 +58,7 @@ export default function Leaverequests() {
     user: '',
     role: '',
     date:'',
+    
     description:''
   });
 

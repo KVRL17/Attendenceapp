@@ -3,7 +3,7 @@ import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink } from "react-router-dom";
 import InputBase from '@mui/material/InputBase';
-import { Button, Typography } from '@mui/material';
+import { Button, Typography, TablePagination } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -48,30 +48,44 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export default function Attendencereport() {
   const [searchTerm, setSearchTerm] = useState('');
   const [tableData, setTableData] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/attendance/%7Bdepartment%7D');
-        // Check if response.data is an array before setting tableData
-        if (Array.isArray(response.data)) {
-          setTableData(response.data);
+        const response = await axios.get('http://localhost:8000/attendance/IT');
+        console.log('Response from API:', response.data);
+        if (response.data && Array.isArray(response.data.attendance_details)) {
+          // Adding SI.No to the data
+          const dataWithSiNo = response.data.attendance_details.map((row, index) => ({
+            ...row,
+            si_no: index + 1,
+          }));
+          setTableData(dataWithSiNo);
         } else {
-          console.error('Data retrieved from API is not an array:', response.data);
-          // Handle the case where data is not in the expected format
-          // For example, set an empty array as tableData
+          console.error('Data retrieved from API is not an array or user_info is not present:', response.data);
           setTableData([]);
         }
       } catch (error) {
         console.error('Error fetching table data:', error);
       }
     };
-
+  
     fetchData();
   }, []);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const filteredRows = tableData.filter(
@@ -121,20 +135,29 @@ export default function Attendencereport() {
             </TableRow>
           </TableHead>
           <TableBody>
-          {filteredRows.map(row => (
+          {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => (
               <StyledTableRow key={row.si_no}>
                 <StyledTableCell component="th" scope="row">
                   {row.si_no}
                 </StyledTableCell>
                 <StyledTableCell>{row.name}</StyledTableCell>
                 <StyledTableCell>{row.role}</StyledTableCell>
-                <StyledTableCell>{row.present}</StyledTableCell>
-                <StyledTableCell>{row.absent}</StyledTableCell>
+                <StyledTableCell>{row.present_days}</StyledTableCell>
+                <StyledTableCell>{row.absent_days}</StyledTableCell>
                 <StyledTableCell><Button variant='outlined'>View</Button></StyledTableCell>
               </StyledTableRow>
           ))}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={filteredRows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </TableContainer>
       </div>
       <br></br>
