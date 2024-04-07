@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink } from "react-router-dom";
 import InputBase from '@mui/material/InputBase';
@@ -10,8 +11,6 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-
-
 
 function Copyright(props) {
   return (
@@ -41,36 +40,45 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   '&:last-child td, &:last-child th': {
     border: 0,
   },
 }));
 
-function createData(si_no, name, role, present,absent) {
-  return { si_no, name, role, present,absent };
-}
-
-const rows = [
-  createData(1, 'Ramana', 'Faculty', 10, 20),
-  createData(2, 'Jagan', 'Faculty', 8, 22),
-  createData(3, 'Aditya', 'Faculty', 7, 23),
-  createData(4, 'Praveen', 'Faculty', 5, 25),
-  createData(5, 'Mohan', 'Faculty', 2, 28),
-];
-
 export default function Attendencereport() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/attendance/%7Bdepartment%7D');
+        // Check if response.data is an array before setting tableData
+        if (Array.isArray(response.data)) {
+          setTableData(response.data);
+        } else {
+          console.error('Data retrieved from API is not an array:', response.data);
+          // Handle the case where data is not in the expected format
+          // For example, set an empty array as tableData
+          setTableData([]);
+        }
+      } catch (error) {
+        console.error('Error fetching table data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredRows = rows.filter(
+  const filteredRows = tableData.filter(
     (row) =>
       row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.role.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  );
 
   return (
     <>
@@ -113,7 +121,7 @@ export default function Attendencereport() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => (
+          {filteredRows.map(row => (
               <StyledTableRow key={row.si_no}>
                 <StyledTableCell component="th" scope="row">
                   {row.si_no}
@@ -124,7 +132,7 @@ export default function Attendencereport() {
                 <StyledTableCell>{row.absent}</StyledTableCell>
                 <StyledTableCell><Button variant='outlined'>View</Button></StyledTableCell>
               </StyledTableRow>
-            ))}
+          ))}
           </TableBody>
         </Table>
       </TableContainer>

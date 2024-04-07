@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink } from "react-router-dom";
 import InputBase from '@mui/material/InputBase';
@@ -62,6 +63,29 @@ const rows = [
 
 export default function Approveleaves() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/leave-requests');
+        // Check if response.data is an array before setting tableData
+        if (Array.isArray(response.data)) {
+          setTableData(response.data);
+        } else {
+          console.error('Data retrieved from API is not an array:', response.data);
+          // Handle the case where data is not in the expected format
+          // For example, set an empty array as tableData
+          setTableData([]);
+        }
+      } catch (error) {
+        console.error('Error fetching table data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
@@ -115,7 +139,7 @@ export default function Approveleaves() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => (
+            {tableData.map((row) => (
               <StyledTableRow key={row.si_no}>
                 <StyledTableCell component="th" scope="row">
                   {row.si_no}

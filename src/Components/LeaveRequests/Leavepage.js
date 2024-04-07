@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import axios from 'axios';
 import { Typography } from "@mui/material";
 import { Box } from "@mui/material";
 import { Button } from '@mui/material';
@@ -65,10 +66,27 @@ function Copyright(props) {
 
 const Leavepage = () =>{
   const [searchTerm, setSearchTerm] = useState('');
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/leave-requests');
+        setTableData(response.data);
+      } catch (error) {
+        console.error('Error fetching table data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
+
+
+  
 
   const filteredRows = rows.filter(
     (row) =>
@@ -118,7 +136,7 @@ const Leavepage = () =>{
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => (
+            {tableData.map((row) => (
               <StyledTableRow key={row.si_no}>
                 <StyledTableCell component="th" scope="row">
                   {row.si_no}
@@ -126,7 +144,7 @@ const Leavepage = () =>{
                 <StyledTableCell>{row.name}</StyledTableCell>
                 <StyledTableCell>{row.role}</StyledTableCell>
                 <StyledTableCell>{row.date}</StyledTableCell>
-                <StyledTableCell>{row.status}</StyledTableCell>
+                <StyledTableCell></StyledTableCell>
               </StyledTableRow>
             ))}
           </TableBody>

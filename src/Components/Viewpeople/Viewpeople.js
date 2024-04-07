@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink } from "react-router-dom";
 import InputBase from '@mui/material/InputBase';
@@ -6,13 +7,11 @@ import { Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
+import TableContainer from '@mui/material/TableContainer'; // Import TableContainer
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import '../Approveleaves/Main.css';
-
-
 
 function Copyright(props) {
   return (
@@ -42,7 +41,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   '&:last-child td, &:last-child th': {
     border: 0,
   },
@@ -52,27 +50,31 @@ function createData(si_no, name, role, status) {
   return { si_no, name, role, status };
 }
 
-const rows = [
-  createData(1, 'Ramana', 'Faculty', 'Active'),
-  createData(2, 'Jagan', 'Faculty', 'Deactive'),
-  createData(3, 'Aditya', 'Faculty', 'Dective'),
-  createData(4, 'Praveen', 'Faculty', 'Active'),
-  createData(5, 'Mohan', 'Faculty', 'Active'),
-];
-
 export default function Viewpeople() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [tableData, setTableData] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/user_info');
+      if (response.data.names && Array.isArray(response.data.names)) {
+        setTableData(response.data.names);
+      } else {
+        console.error('Data retrieved from API is not an array:', response.data);
+        setTableData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching table data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
-
-  const filteredRows = rows.filter(
-    (row) =>
-      row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <>
@@ -112,16 +114,16 @@ export default function Viewpeople() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => (
-              <StyledTableRow key={row.si_no}>
-                <StyledTableCell component="th" scope="row">
-                  {row.si_no}
-                </StyledTableCell>
-                <StyledTableCell>{row.name}</StyledTableCell>
-                <StyledTableCell>{row.role}</StyledTableCell>
-                <StyledTableCell>{row.status}</StyledTableCell>
-              </StyledTableRow>
-            ))}
+          {tableData.map((row) => (
+  <StyledTableRow key={row.si_no}>
+    <StyledTableCell component="th" scope="row">
+      {row.si_no}
+    </StyledTableCell>
+    <StyledTableCell>{row.name}</StyledTableCell>
+    <StyledTableCell>{row.role}</StyledTableCell>
+    <StyledTableCell>{row.status}</StyledTableCell>
+  </StyledTableRow>
+))}
           </TableBody>
         </Table>
       </TableContainer>
